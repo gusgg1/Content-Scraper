@@ -1,0 +1,23 @@
+{
+  "name": "content-scraper",
+  "version": "0.0.1",
+  "description": "Scrapes a website and creates CSV file",
+  "main": "scraper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gusgg1/Content-Scraper.git"
+  },
+  "author": "g.a.f",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gusgg1/Content-Scraper/issues"
+  },
+  "homepage": "https://github.com/gusgg1/Content-Scraper#readme",
+  "dependencies": {
+    "json2csv": "^4.0.2",
+    "scrape-it": "^5.0.2"
+  }
+}
