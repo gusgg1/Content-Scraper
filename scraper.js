@@ -1,24 +1,21 @@
 // Dependencies
 const fs = require('fs');
 const scrapeIt = require("scrape-it");
-const json2csv = require("json2csv");
+const Json2csvParser = require('json2csv').Parser;
 
+// Variables
 const dir = './data';
 const entryPoint = "http://shirts4mike.com/shirts.php";
-let shirtsDetails = [];
 
-
+// If no "data" folder create one
 if (!fs.existsSync(dir)){
   fs.mkdirSync(dir);
 }
 
-function scrapeData(url, config) {
-  return scrapeIt(url, config)
-    // .then(res => console.log(res)) shows status HTTP etc
-    .then(checkStatus)
-    .then(res => res.json())    
-    .catch(error => console.log("Looks like there was a problem! " + error))
-}
+
+// ------------------------------------------
+//  Configurations for scrapeIt
+// ------------------------------------------
 
 const configURL = {
   teeShirts: {
@@ -33,84 +30,96 @@ const configURL = {
 };
 
 const configInfoShirts = {
-  shirt: {
-    selector: ".wrapper",
-    data: {
-      title: {
-        selector: ".shirt-picture img",
-        attr: "alt"
-      },
-      price: ".shirt-details .price",
-      imageUrl: {
-        selector: ".shirt-picture img",
-        attr: "src"
-      }
-    } 
+  Title: {
+      selector: '.shirt-picture img',
+      attr: 'alt'
+  },
+  Price: {
+      selector: '.price',
+      how: 'html'
+  },
+  ImageURL: {
+      selector: '.shirt-picture img',
+      attr: 'src'
   }
-}
+};
 
+
+// ------------------------------------------
+//  Scraping from site and catching errors
+// ------------------------------------------
 
 scrapeIt("http://shirts4mike.com/shirts.php", configURL)
-  .then(({ data, response }) => {
-    console.log(`Status Code: ${response.statusCode}`)
-    const urls = data.teeShirts;
-    const fullUrls = urls.map(url => `http://shirts4mike.com/${url.url}`);
+  .then(checkStatus)
+  .then(getLinksShirts)
+  .then(getShirtsInfo)
+  .catch(function(error) {
+    console.log("There’s been an error. Cannot connect to http://shirts4mike.com. " + error);
+    logError(error);
+  });
 
 
-    fullUrls.forEach(url => {
-      scrapeIt(url, configInfoShirts, (err, { data }) => {
-        console.log(data.shirt);
-        
-        shirtsDetails.push(data.shirt.title);
-        console.log(shirtsDetails);
+// ------------------------------------------
+//  Helper functions
+// ------------------------------------------
+
+// gets the link for each shirt
+function getLinksShirts({data, response}) {
+  const urls = data.teeShirts;
+  const shirtLinks = urls.map(url => `http://shirts4mike.com/${url.url}`);
+  return shirtLinks;
+}
+
+// scrapes shirt info into array
+function getShirtsInfo(links) {
+  const shirtsInfo = [];      
+  let datas = [];
+  for (let link of links) { 
+    scrapeIt(link, configInfoShirts)
+      .then(checkStatus)
+      .then(({ data, response }) => {
+        data.Url = link;
+        data.Time = new Date().toLocaleString();
+        shirtsInfo.push(data);
+        writeCSV(shirtsInfo);
       })
-    })
-  })
+  } 
+}
 
+// creates CSV file uisng shirts info
+function writeCSV(shirtsInfo) {
+  const scrapeDate = new Date().toLocaleDateString();
+  const filePath = `${dir}/${scrapeDate}.csv`;
+  const fields = ["Title", "Price", "ImageURL", "Url", "Time"];
+  const json2csvParser = new Json2csvParser({ fields });
+  const csv = json2csvParser.parse(shirtsInfo);
+  
+  fs.writeFile(filePath, csv, function(error) {
+    if (error) {
+      console.log(error);
+    } else {  
+      console.log("Your file is saved");
+    }
+  });
+}
 
+// when catching an error it is logged in a file
+function logError(error) {
+  const message = `${new Date().toLocaleString()} -- A (${error}) error has occured, could not save CSV file in folder "Data".\n`;
+  fs.appendFile('./scraper-error.log', message, () => {
+    console.error(message);
+  });
+}
 
-  /*
-  .then(({ data, response }) => {
-    // console.log(`Status Code: ${response.statusCode}`);
-    // console.log(data.shirt);
-    shirtsDetails.push(data.shirt);
-    console.log(shirtsDetails);
-  })
-  */
-
-
-// ------------------------------------------
-//  HELPER FUNCTIONS
-// ------------------------------------------
-
-function checkStatus(response) {
-  if (response.statusCode === 200) {
-    return Promise.resolve(response);
-  } else {
+// if response not ok promise is rejected and catch will get the error.
+function checkStatus({ data, response }) {
+  if (response.statusCode === 200) {  
+    return {data, response}
+  } else {  
     return Promise.reject(new Error(response.statusText));
   }
 }
 
-function getShirtFullURL(data) {
-  let shirtFullURL = [];
-  data.forEach(url => {
-    const urlShirt = `http://shirts4mike.com/${url.url}`;
-    shirtFullURL.push(urlShirt);
-  });
-  return shirtFullURL;
-}
-
-function getShirtInfo(shirtsUrls) {
-  let shirtsInfo = [];
-  shirtsUrls.forEach(url => {
-    scrapeIt(url, configInfoShirts)
-      .then(({ data, response }) => {
-        // console.log(`Status Code: ${response.statusCode}`);
-        shirtsInfo.push(data);
-      })
-  });
-  return shirtsInfo;
-}
 
 
 
@@ -123,20 +132,6 @@ function getShirtInfo(shirtsUrls) {
 
 
 
-/*
-fs.open('./data', 'wx', (err, fd) => {
-  if (err) {
-    if (err.code === 'EEXIST') {
-      console.error('myfile already exists');
-      return;
-    }
-
-    throw err;
-  }
-
-  writeMyData(fd);
-});
-*/
 
 
 
