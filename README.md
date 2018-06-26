@@ -1,12 +1,17 @@
-# Content-Scraper
-A Node.js command line application that goes to an ecommerce site to get the latest prices and save them to a spreadsheet in CSV format.
+# Content Scraper
 
-Scrapes content from shirts4mike.  
+#### Project 6
+
+###### This is my sixth of twelve projects for the Techdegree Full Stack JavaScript.
+
+A Node.js command line application that goes to an e-commerce site to get the latest prices and save them to a spreadsheet in CSV format.
+
+Scrapes content from [shirts4mike](http://www.shirts4mike.com/).  
 On command line:  
-* npm install  
+* `npm install`  
 
 then  
 
-* npm start  
+* `npm start`  
 
-Data will be saved under ./data.
+Data will be saved under `./data`.
