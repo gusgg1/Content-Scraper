@@ -49,7 +49,7 @@ const configInfoShirts = {
 //  Scraping from site and catching errors
 // ------------------------------------------
 
-scrapeIt("http://shirts4mike.com/shirts.php", configURL)
+scrapeIt(entryPoint, configURL)
   .then(checkStatus)
   .then(getLinksShirts)
   .then(getShirtsInfo)
