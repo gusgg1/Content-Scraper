@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/gusgg1/Content-Scraper#readme",
   "dependencies": {
-    "json2csv": "^4.0.2",
-    "scrape-it": "^5.0.2"
+    "json2csv": "^4.2.1",
+    "scrape-it": "^5.1.0"
   }
 }
