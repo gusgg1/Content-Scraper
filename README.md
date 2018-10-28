@@ -8,7 +8,7 @@ A Node.js command-line application that goes to an e-commerce site to get the la
 
 This application scrapes content from [www.shirts4mike.com](http://www.shirts4mike.com/).  
 
-To rin this application type on the command line:  
+To run this application type on the command line:  
 * `npm install`  
 
 then  
